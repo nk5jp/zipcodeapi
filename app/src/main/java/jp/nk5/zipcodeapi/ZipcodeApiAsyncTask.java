@@ -27,32 +27,37 @@ public class ZipcodeApiAsyncTask extends AsyncTask<Integer, Void, String> {
 
     protected String doInBackground(Integer... param)
     {
-        HttpURLConnection connection;
+        HttpURLConnection connection = null;
         String urlFormat = "http://zipcloud.ibsnet.co.jp/api/search?zipcode=%d";
         StringBuilder builder = new StringBuilder();
         String returnString = "";
 
         // 接続の確立
-        try {
+        try
+        {
             URL url = new URL(String.format(Locale.JAPAN, urlFormat, param[0]));
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
             connection.setInstanceFollowRedirects(false);
             connection.setRequestProperty("Accept-Language", "jp");
-            // 接続
             connection.connect();
-        } catch (Exception e) {
-            return null;
-        }
 
-        //必要な情報の取得
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF8"))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                builder.append(line);
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF8"))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    builder.append(line);
+                }
+            } catch (Exception e) {
+                return null;
             }
         } catch (Exception e) {
             return null;
+        } finally {
+            try {
+                if (connection != null) connection.disconnect();
+            } catch (Exception e) {
+                //普通はエラーを書きだす
+            }
         }
 
         try
